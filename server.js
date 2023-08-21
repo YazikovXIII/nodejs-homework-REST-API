@@ -4,10 +4,8 @@ const { DB_HOST } = process.env;
 
 mongoose.set("strictQuery", true);
 
-// console.log(process.env);
-
 mongoose
-  .connect(DB_HOST)
+  .connect(DB_HOST, { dbName: "contacts-book" })
   .then(() => {
     app.listen(3000);
     console.log("Database connected");
@@ -16,5 +14,3 @@ mongoose
     console.log(error.message);
     process.exit(1);
   });
-
-// https://goit-nodejs-db-api.onrender.com/api/contacts
