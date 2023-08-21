@@ -20,6 +20,10 @@ const schema = joi.object({
   }),
 });
 
+const patchSchema = joi.object({
+  favorite: joi.boolean(),
+});
+
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
@@ -113,7 +117,10 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
     if (!body || Object.keys(body).length === 0) {
       return res.status(400).json({ message: "missing field favorite" });
     }
-
+    const { error } = patchSchema.validate(body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
     const updatedStatusContact = await updateStatusContact(contactId, body);
     if (!updatedStatusContact) {
       return res.status(404).json({ message: "Contact not found" });
