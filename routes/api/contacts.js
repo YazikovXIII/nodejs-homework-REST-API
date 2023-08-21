@@ -5,6 +5,7 @@ const {
   addContact,
   removeContact,
   updateContact,
+  updateStatusContact,
 } = require("../../models/contacts");
 const joi = require("joi");
 const schema = joi.object({
@@ -16,9 +17,6 @@ const schema = joi.object({
   }),
   phone: joi.string().required().messages({
     "any.required": "Missing required phone field",
-  }),
-  favorite: joi.boolean().required().messages({
-    "any.required": "Missing required favorite field",
   }),
 });
 
@@ -102,6 +100,26 @@ router.put("/:contactId", async (req, res, next) => {
     }
 
     res.status(200).json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:contactId/favorite", async (req, res, next) => {
+  try {
+    const contactId = req.params.contactId;
+    const body = req.body;
+
+    if (!body || Object.keys(body).length === 0) {
+      return res.status(400).json({ message: "missing field favorite" });
+    }
+
+    const updatedStatusContact = await updateStatusContact(contactId, body);
+    if (!updatedStatusContact) {
+      return res.status(404).json({ message: "Contact not found" });
+    }
+
+    res.status(200).json(updatedStatusContact);
   } catch (error) {
     next(error);
   }
