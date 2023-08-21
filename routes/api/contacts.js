@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const {
   listContacts,
   getContactById,
@@ -6,7 +7,7 @@ const {
   removeContact,
   updateContact,
   updateStatusContact,
-} = require("../../models/contacts");
+} = require("../../controllers/contacts");
 const joi = require("joi");
 const schema = joi.object({
   name: joi.string().required().messages({
@@ -38,6 +39,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const contact = await getContactById(contactId);
 
     if (!contact) {
@@ -72,6 +78,11 @@ router.post("/", async (req, res, next) => {
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const removedContact = await removeContact(contactId);
 
     if (!removedContact) {
@@ -87,6 +98,11 @@ router.delete("/:contactId", async (req, res, next) => {
 router.put("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const body = req.body;
 
     if (!body || Object.keys(body).length === 0) {
@@ -112,6 +128,11 @@ router.put("/:contactId", async (req, res, next) => {
 router.patch("/:contactId/favorite", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const body = req.body;
 
     if (!body || Object.keys(body).length === 0) {
