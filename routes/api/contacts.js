@@ -17,6 +17,9 @@ const schema = joi.object({
   phone: joi.string().required().messages({
     "any.required": "Missing required phone field",
   }),
+  favorite: joi.boolean().required().messages({
+    "any.required": "Missing required favorite field",
+  }),
 });
 
 const router = express.Router();
