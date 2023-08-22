@@ -1,11 +1,13 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const {
   listContacts,
   getContactById,
   addContact,
   removeContact,
   updateContact,
-} = require("../../models/contacts");
+  updateStatusContact,
+} = require("../../controllers/contacts");
 const joi = require("joi");
 const schema = joi.object({
   name: joi.string().required().messages({
@@ -17,6 +19,10 @@ const schema = joi.object({
   phone: joi.string().required().messages({
     "any.required": "Missing required phone field",
   }),
+});
+
+const patchSchema = joi.object({
+  favorite: joi.boolean(),
 });
 
 const router = express.Router();
@@ -33,6 +39,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const contact = await getContactById(contactId);
 
     if (!contact) {
@@ -67,6 +78,11 @@ router.post("/", async (req, res, next) => {
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const removedContact = await removeContact(contactId);
 
     if (!removedContact) {
@@ -82,6 +98,11 @@ router.delete("/:contactId", async (req, res, next) => {
 router.put("/:contactId", async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
     const body = req.body;
 
     if (!body || Object.keys(body).length === 0) {
@@ -99,6 +120,34 @@ router.put("/:contactId", async (req, res, next) => {
     }
 
     res.status(200).json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:contactId/favorite", async (req, res, next) => {
+  try {
+    const contactId = req.params.contactId;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId" });
+    }
+
+    const body = req.body;
+
+    if (!body || Object.keys(body).length === 0) {
+      return res.status(400).json({ message: "missing field favorite" });
+    }
+    const { error } = patchSchema.validate(body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const updatedStatusContact = await updateStatusContact(contactId, body);
+    if (!updatedStatusContact) {
+      return res.status(404).json({ message: "Contact not found" });
+    }
+
+    res.status(200).json(updatedStatusContact);
   } catch (error) {
     next(error);
   }
