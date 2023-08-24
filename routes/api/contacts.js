@@ -20,11 +20,9 @@ const schema = joi.object({
     "any.required": "Missing required phone field",
   }),
 });
-
 const patchSchema = joi.object({
   favorite: joi.boolean(),
 });
-
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
