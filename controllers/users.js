@@ -4,7 +4,9 @@ const addUser = async (body) => {
   const existingContact = await User.findOne({ name: body.email });
 
   if (existingContact) {
-    throw new Error("Email already in use");
+    const error = new Error("Email already in use");
+    error.status = 409;
+    throw error;
   }
   return User.create(body);
 };
