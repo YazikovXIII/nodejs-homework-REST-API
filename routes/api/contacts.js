@@ -8,35 +8,20 @@ const {
   updateContact,
   updateStatusContact,
 } = require("../../controllers/contacts");
-const joi = require("joi");
-const schema = joi.object({
-  name: joi.string().required().messages({
-    "any.required": "Missing required name field",
-  }),
-  email: joi.string().required().messages({
-    "any.required": "Missing required email field",
-  }),
-  phone: joi.string().required().messages({
-    "any.required": "Missing required phone field",
-  }),
-});
-
-const patchSchema = joi.object({
-  favorite: joi.boolean(),
-});
-
+const authenticate = require("../../middleware/authenticate");
+const { schema, patchSchema } = require("../../schemas/contacts");
 const router = express.Router();
 
-router.get("/", async (req, res, next) => {
+router.get("/", authenticate, async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts(req);
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
   }
 });
 
-router.get("/:contactId", async (req, res, next) => {
+router.get("/:contactId", authenticate, async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
 
@@ -56,7 +41,7 @@ router.get("/:contactId", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", authenticate, async (req, res, next) => {
   try {
     const body = req.body;
 
@@ -68,14 +53,14 @@ router.post("/", async (req, res, next) => {
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
-    const newContact = await addContact(req.body);
+    const newContact = await addContact(req, res);
     res.status(201).json(newContact);
   } catch (error) {
     next(error);
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", authenticate, async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
 
@@ -95,7 +80,7 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:contactId", authenticate, async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
 
@@ -125,7 +110,7 @@ router.put("/:contactId", async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId/favorite", async (req, res, next) => {
+router.patch("/:contactId/favorite", authenticate, async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
 

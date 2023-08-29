@@ -1,7 +1,18 @@
 const Contact = require("../models/contact");
 
-const listContacts = async () => {
-  return Contact.find();
+const listContacts = async (req) => {
+  const { page, limit, favorite } = req.query;
+  const skip = (page - 1) * limit;
+  const query = { owner: req.user._id };
+
+  if (favorite === "true") {
+    query.favorite = true;
+  }
+  const contacts = await Contact.find(query)
+    .skip(skip)
+    .limit(limit)
+    .populate("owner", "email subscription");
+  return contacts;
 };
 
 const getContactById = async (contactId) => {
@@ -12,13 +23,10 @@ const removeContact = async (contactId) => {
   return Contact.findByIdAndRemove(contactId);
 };
 
-const addContact = async (body) => {
-  const existingContact = await Contact.findOne({ name: body.name });
-
-  if (existingContact) {
-    throw new Error("Contact with this name already exists.");
-  }
-  return Contact.create(body);
+const addContact = async (req, res) => {
+  const body = req.body;
+  const { _id: owner } = req.user;
+  return Contact.create({ ...body, owner });
 };
 
 const updateContact = async (contactId, body) => {
