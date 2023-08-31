@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { SECRET_KEY } = process.env;
+const gravatar = require("gravatar");
+const Jimp = require("jimp");
+const path = require("path");
 
 const addUser = async (body) => {
   const existingUser = await User.findOne({ email: body.email });
@@ -13,7 +16,9 @@ const addUser = async (body) => {
     throw error;
   }
   const hashedPassword = await bcrypt.hash(body.password, 10);
-  return User.create({ ...body, password: hashedPassword });
+  const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
+
+  return User.create({ ...body, password: hashedPassword, avatarURL: avatar });
 };
 
 const loginUser = async (email, password) => {
@@ -86,10 +91,40 @@ const updateSubscription = async (userId, subscription) => {
   return updatedUser;
 };
 
+const updateAvatar = async (req) => {
+  const userId = req.user.id;
+  const tempPath = req.file.path;
+  const avatarPath = path.join(
+    __dirname,
+    "..",
+    "public",
+    "avatars",
+    `${userId}.jpg`
+  );
+
+  const image = await Jimp.read(tempPath);
+  await image.resize(250, 250).writeAsync(avatarPath);
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { avatarURL: avatarPath },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    const error = new Error("Not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return updatedUser;
+};
+
 module.exports = {
   addUser,
   loginUser,
   logoutUser,
   getCurrentUser,
   updateSubscription,
+  updateAvatar,
 };

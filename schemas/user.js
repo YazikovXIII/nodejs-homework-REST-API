@@ -29,4 +29,8 @@ const subscriptionSchema = joi.object({
     }),
 });
 
-module.exports = { regSchema, loginSchema, subscriptionSchema };
+module.exports = {
+  regSchema,
+  loginSchema,
+  subscriptionSchema,
+};

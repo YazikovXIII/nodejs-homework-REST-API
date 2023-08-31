@@ -7,12 +7,14 @@ const {
   logoutUser,
   getCurrentUser,
   updateSubscription,
+  updateAvatar,
 } = require("../../controllers/users");
 const {
   regSchema,
   loginSchema,
   subscriptionSchema,
 } = require("../../schemas/user");
+const upload = require("../../middleware/upload");
 
 router.post("/register", async (req, res, next) => {
   try {
@@ -114,5 +116,22 @@ router.patch("/", authenticate, async (req, res, next) => {
     next(error);
   }
 });
+
+router.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatarURL"),
+  async (req, res, next) => {
+    try {
+      const updatedUser = await updateAvatar(req);
+
+      res.status(200).json({
+        avatarURL: updatedUser.avatarURL,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;
