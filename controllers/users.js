@@ -38,7 +38,6 @@ const loginUser = async (email, password) => {
     throw error;
   }
   const payload = { id: user._id };
-  console.log(payload);
 
   const token = jwt.sign(payload, SECRET_KEY, {
     expiresIn: "1d",
