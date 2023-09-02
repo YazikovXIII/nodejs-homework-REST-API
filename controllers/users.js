@@ -6,6 +6,7 @@ const { SECRET_KEY } = process.env;
 const gravatar = require("gravatar");
 const Jimp = require("jimp");
 const path = require("path");
+const fs = require("fs");
 
 const addUser = async (body) => {
   const existingUser = await User.findOne({ email: body.email });
@@ -103,6 +104,11 @@ const updateAvatar = async (req) => {
 
   const image = await Jimp.read(tempPath);
   await image.resize(250, 250).writeAsync(avatarPath);
+  fs.unlink(tempPath, (err) => {
+    if (err) {
+      console.error("Deletion ERROR:", err);
+    }
+  });
 
   const updatedUser = await User.findByIdAndUpdate(
     userId,

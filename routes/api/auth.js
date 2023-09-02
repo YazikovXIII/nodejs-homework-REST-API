@@ -126,7 +126,7 @@ router.patch(
       const updatedUser = await updateAvatar(req);
 
       res.status(200).json({
-        avatarURL: updatedUser.avatarURL,
+        avatarURL: `avatars/${updatedUser._id}.jpg`,
       });
     } catch (error) {
       next(error);
