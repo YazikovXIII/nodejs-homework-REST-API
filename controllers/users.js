@@ -110,9 +110,11 @@ const updateAvatar = async (req) => {
     }
   });
 
+  const avatarURL = `avatars/${userId}.jpg`;
+
   const updatedUser = await User.findByIdAndUpdate(
     userId,
-    { avatarURL: avatarPath },
+    { avatarURL },
     { new: true }
   );
 
