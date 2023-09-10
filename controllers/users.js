@@ -8,20 +8,7 @@ const Jimp = require("jimp");
 const path = require("path");
 const fs = require("fs");
 const sendVerificationEmail = require("../helpers/sendEmail");
-
-// const addUser = async (body) => {
-//   const existingUser = await User.findOne({ email: body.email });
-
-//   if (existingUser) {
-//     const error = new Error("Email already in use");
-//     error.status = 409;
-//     throw error;
-//   }
-//   const hashedPassword = await bcrypt.hash(body.password, 10);
-//   const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
-
-//   return User.create({ ...body, password: hashedPassword, avatarURL: avatar });
-// };
+const { v4: uuidv4 } = require("uuid");
 
 const addUser = async (body) => {
   const existingUser = await User.findOne({ email: body.email });
@@ -32,7 +19,7 @@ const addUser = async (body) => {
     throw error;
   }
 
-  const verificationToken = 2;
+  const verificationToken = uuidv4();
 
   const hashedPassword = await bcrypt.hash(body.password, 10);
   const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
@@ -54,6 +41,11 @@ const loginUser = async (email, password) => {
   if (!user) {
     const error = new Error("Invalid email or password");
     error.status = 401;
+    throw error;
+  }
+  if (!user.verify) {
+    const error = new Error("Email not verified");
+    error.status = 400;
     throw error;
   }
 
@@ -156,8 +148,16 @@ const updateAvatar = async (req) => {
 const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { email } = jwt.verify(token, SECRET_KEY);
-    return await User.updateOne({ email }, { verify: true });
+    const user = await User.findOne({ verificationToken: token });
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.status = 404;
+      throw error;
+    }
+    user.verify = true;
+    await user.save();
+    res.status(200).json({ message: "Verification successful" });
   } catch (error) {
     next(error);
   }

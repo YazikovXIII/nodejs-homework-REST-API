@@ -135,16 +135,6 @@ router.patch(
   }
 );
 
-router.get("/verify/:token", async (req, res, next) => {
-  try {
-    const verifiedUser = await verifyEmail(req);
-    if (!verifiedUser) {
-      res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json({ message: "Verification successful" });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/verify/:token", verifyEmail);
 
 module.exports = router;
