@@ -8,7 +8,6 @@ const Jimp = require("jimp");
 const path = require("path");
 const fs = require("fs");
 const sendVerificationEmail = require("../helpers/sendEmail");
-const nanoid = require("nanoid");
 
 // const addUser = async (body) => {
 //   const existingUser = await User.findOne({ email: body.email });
@@ -33,7 +32,7 @@ const addUser = async (body) => {
     throw error;
   }
 
-  const verificationToken = nanoid();
+  const verificationToken = 1;
 
   const hashedPassword = await bcrypt.hash(body.password, 10);
   const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
