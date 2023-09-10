@@ -32,7 +32,7 @@ const addUser = async (body) => {
     throw error;
   }
 
-  const verificationToken = 1;
+  const verificationToken = 2;
 
   const hashedPassword = await bcrypt.hash(body.password, 10);
   const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
