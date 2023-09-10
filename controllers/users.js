@@ -7,6 +7,22 @@ const gravatar = require("gravatar");
 const Jimp = require("jimp");
 const path = require("path");
 const fs = require("fs");
+const sendVerificationEmail = require("../helpers/sendEmail");
+const nanoid = require("nanoid");
+
+// const addUser = async (body) => {
+//   const existingUser = await User.findOne({ email: body.email });
+
+//   if (existingUser) {
+//     const error = new Error("Email already in use");
+//     error.status = 409;
+//     throw error;
+//   }
+//   const hashedPassword = await bcrypt.hash(body.password, 10);
+//   const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
+
+//   return User.create({ ...body, password: hashedPassword, avatarURL: avatar });
+// };
 
 const addUser = async (body) => {
   const existingUser = await User.findOne({ email: body.email });
@@ -16,10 +32,21 @@ const addUser = async (body) => {
     error.status = 409;
     throw error;
   }
+
+  const verificationToken = nanoid();
+
   const hashedPassword = await bcrypt.hash(body.password, 10);
   const avatar = gravatar.url(body.email, { s: "250", r: "pg", d: "nm" });
 
-  return User.create({ ...body, password: hashedPassword, avatarURL: avatar });
+  sendVerificationEmail(body.email, verificationToken);
+
+  return User.create({
+    ...body,
+    password: hashedPassword,
+    avatarURL: avatar,
+    verificationToken: verificationToken,
+    verify: false,
+  });
 };
 
 const loginUser = async (email, password) => {
@@ -127,6 +154,16 @@ const updateAvatar = async (req) => {
   return updatedUser;
 };
 
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { email } = jwt.verify(token, SECRET_KEY);
+    return await User.updateOne({ email }, { verify: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   addUser,
   loginUser,
@@ -134,4 +171,5 @@ module.exports = {
   getCurrentUser,
   updateSubscription,
   updateAvatar,
+  verifyEmail,
 };

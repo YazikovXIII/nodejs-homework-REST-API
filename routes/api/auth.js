@@ -8,6 +8,7 @@ const {
   getCurrentUser,
   updateSubscription,
   updateAvatar,
+  verifyEmail,
 } = require("../../controllers/users");
 const {
   regSchema,
@@ -133,5 +134,17 @@ router.patch(
     }
   }
 );
+
+router.get("/verify/:token", async (req, res, next) => {
+  try {
+    const verifiedUser = await verifyEmail(req);
+    if (!verifiedUser) {
+      res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;
