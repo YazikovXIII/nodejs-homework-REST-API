@@ -30,7 +30,11 @@ const resendEmail = async (body) => {
     error.status = 400;
     throw error;
   }
-  console.log(user);
+  if (user.verify === true) {
+    const error = new Error("Verification has already been passed");
+    error.status = 400;
+    throw error;
+  }
   sendVerificationEmail(user.email, user.verificationToken);
   return user;
 };
