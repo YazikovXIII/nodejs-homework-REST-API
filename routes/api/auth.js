@@ -14,8 +14,10 @@ const {
   regSchema,
   loginSchema,
   subscriptionSchema,
+  reVerifingSchema,
 } = require("../../schemas/user");
 const upload = require("../../middleware/upload");
+const { resendEmail } = require("../../helpers/sendEmail");
 
 router.post("/register", async (req, res, next) => {
   try {
@@ -68,7 +70,7 @@ router.post("/login", async (req, res, next) => {
 
     res.status(200).json(result);
   } catch (error) {
-    if (error.status) {
+    if (error.status === 401) {
       res.status(error.status).json({ message: "Email or password is wrong" });
     } else {
       next(error);
@@ -136,5 +138,22 @@ router.patch(
 );
 
 router.get("/verify/:token", verifyEmail);
+
+router.post("/verify", async (req, res, next) => {
+  try {
+    const body = req.body;
+    if (!body || Object.keys(body).length === 0) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+    const { error } = reVerifingSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    await resendEmail(req.body);
+    res.status(200).json({ message: "Email sent" });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

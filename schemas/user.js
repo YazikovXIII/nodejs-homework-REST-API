@@ -29,8 +29,15 @@ const subscriptionSchema = joi.object({
     }),
 });
 
+const reVerifingSchema = joi.object({
+  email: joi.string().email().required().messages({
+    "any.required": "Missing required email field",
+  }),
+});
+
 module.exports = {
   regSchema,
   loginSchema,
   subscriptionSchema,
+  reVerifingSchema,
 };
