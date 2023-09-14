@@ -38,11 +38,7 @@ router.post("/register", async (req, res, next) => {
     };
     res.status(201).json(result);
   } catch (error) {
-    if (error.status === 409) {
-      res.status(409).json({ message: error.message });
-    } else {
-      next(error);
-    }
+    next(error);
   }
 });
 

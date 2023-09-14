@@ -66,6 +66,7 @@ const logoutUser = async (userId) => {
   user.token = null;
   await user.save();
 };
+
 const getCurrentUser = async (userId) => {
   const user = await User.findById(userId);
   if (!user) {
@@ -132,6 +133,7 @@ const verifyEmail = async (req, res, next) => {
       throw error;
     }
     user.verify = true;
+    user.verificationToken = null;
     await user.save();
     res.status(200).json({ message: "Verification successful" });
   } catch (error) {
