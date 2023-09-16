@@ -146,7 +146,7 @@ router.post("/verify", async (req, res, next) => {
       return res.status(400).json({ message: error.details[0].message });
     }
     await resendEmail(req.body);
-    res.status(200).json({ message: "Email sent" });
+    res.status(200).json({ message: "Verification email sent" });
   } catch (error) {
     next(error);
   }
