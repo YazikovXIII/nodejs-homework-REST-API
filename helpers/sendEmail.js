@@ -1,6 +1,5 @@
 const mailgun = require("mailgun-js");
 require("dotenv").config();
-const User = require("../models/user");
 const { MG_API_KEY, MG_DOMAIN } = process.env;
 const apiKey = MG_API_KEY;
 const domain = MG_DOMAIN;
@@ -28,20 +27,4 @@ const sendVerificationEmail = async (toEmail, verificationToken) => {
   });
 };
 
-const resendEmail = async (body) => {
-  const user = await User.findOne({ email: body.email });
-  if (!user) {
-    const error = new Error("User not found");
-    error.status = 400;
-    throw error;
-  }
-  if (user.verify === true) {
-    const error = new Error("Verification has already been passed");
-    error.status = 400;
-    throw error;
-  }
-  sendVerificationEmail(user.email, user.verificationToken);
-  return user;
-};
-
-module.exports = { sendVerificationEmail, resendEmail };
+module.exports = { sendVerificationEmail };

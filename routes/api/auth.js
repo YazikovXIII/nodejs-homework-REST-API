@@ -17,7 +17,9 @@ const {
   reVerifingSchema,
 } = require("../../schemas/user");
 const upload = require("../../middleware/upload");
-const { resendEmail } = require("../../helpers/sendEmail");
+// const { resendEmail } = require("../../helpers/sendEmail");
+const bodyValidation = require("../../middleware/bodyValidation");
+const resendEmail = require("../../controllers/resendEmail");
 
 router.post("/register", async (req, res, next) => {
   try {
@@ -135,21 +137,6 @@ router.patch(
 
 router.get("/verify/:token", verifyEmail);
 
-router.post("/verify", async (req, res, next) => {
-  try {
-    const body = req.body;
-    if (!body || Object.keys(body).length === 0) {
-      return res.status(400).json({ message: "Missing fields" });
-    }
-    const { error } = reVerifingSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-    await resendEmail(req.body);
-    res.status(200).json({ message: "Verification email sent" });
-  } catch (error) {
-    next(error);
-  }
-});
+router.post("/verify", bodyValidation(reVerifingSchema), resendEmail);
 
 module.exports = router;
