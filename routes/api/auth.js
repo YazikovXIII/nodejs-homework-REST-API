@@ -8,13 +8,18 @@ const {
   getCurrentUser,
   updateSubscription,
   updateAvatar,
+  verifyEmail,
 } = require("../../controllers/users");
 const {
   regSchema,
   loginSchema,
   subscriptionSchema,
+  reVerifingSchema,
 } = require("../../schemas/user");
 const upload = require("../../middleware/upload");
+// const { resendEmail } = require("../../helpers/sendEmail");
+const bodyValidation = require("../../middleware/bodyValidation");
+const resendEmail = require("../../controllers/resendEmail");
 
 router.post("/register", async (req, res, next) => {
   try {
@@ -35,11 +40,7 @@ router.post("/register", async (req, res, next) => {
     };
     res.status(201).json(result);
   } catch (error) {
-    if (error.status === 409) {
-      res.status(409).json({ message: error.message });
-    } else {
-      next(error);
-    }
+    next(error);
   }
 });
 
@@ -67,7 +68,7 @@ router.post("/login", async (req, res, next) => {
 
     res.status(200).json(result);
   } catch (error) {
-    if (error.status) {
+    if (error.status === 401) {
       res.status(error.status).json({ message: "Email or password is wrong" });
     } else {
       next(error);
@@ -133,5 +134,9 @@ router.patch(
     }
   }
 );
+
+router.get("/verify/:token", verifyEmail);
+
+router.post("/verify", bodyValidation(reVerifingSchema), resendEmail);
 
 module.exports = router;
